@@ -53,7 +53,10 @@ function getReactedUserIds(channelId: string, ts: string) {
     });
 
     const repliesBody = JSON.parse(replies.getContentText());
-    const _reactionUserIds = (repliesBody.messages[0].reactions as { users: string[] }[]).flatMap((reaction) => reaction.users);
+    const reactions = repliesBody.messages[0].reactions;
+    if (typeof reactions === 'undefined') return []; // no reacted users.
+
+    const _reactionUserIds = (reactions as { users: string[] }[]).flatMap((reaction) => reaction.users);
     const reactionUserIds = Array.from(new Set(_reactionUserIds)); // Remove duplicates.
 
     return reactionUserIds;
