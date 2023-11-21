@@ -19,7 +19,7 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
   if (!usersList) return false;
 
   const { reactedUsers, nonReactedUsers } = usersList;
-  return ContentService.createTextOutput(`スタンプつけた人\n${reactedUsers.join('\n')}\n\nスタンプつけてない人\n${nonReactedUsers.join('\n')}`);
+  return ContentService.createTextOutput(`【スタンプつけた人】\n${returnLogText(reactedUsers)}\n\n【スタンプつけてない人】\n${returnLogText(nonReactedUsers)}`);
 }
 
 function getThreadData(threadLink: string) {
@@ -88,4 +88,8 @@ function getUserListOfReactedOrNot(channelId: string, reactedUserIds: string[]) 
     Logger.log(e);
     return false;
   }
+}
+
+function returnLogText(usersList: string[]) {
+  return usersList.length === 0 ? 'いません！' : usersList.join('\n');
 }
