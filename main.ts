@@ -7,16 +7,15 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
   const threadLink = e.parameter.text;
   const threadData = getThreadData(threadLink);
   if (!threadData) {
-    Logger.log('Failed to get "threadData".');
-    return false;
+    return ContentService.createTextOutput('Error: スレッドデータの取得に失敗しました。:pien-2:');
   }
 
   const { channelId, ts } = threadData;
   const reactedUserIds = getReactedUserIds(channelId, ts);
-  if (!reactedUserIds) return false;
+  if (!reactedUserIds) return ContentService.createTextOutput('Error: スタンプを押したユーザー一覧の取得に失敗しました。:pien-2:');
 
   const usersList = getUserListOfReactedOrNot(channelId, reactedUserIds);
-  if (!usersList) return false;
+  if (!usersList) return ContentService.createTextOutput('Error: ユーザー一覧の取得に失敗しました。:pien-2:');
 
   const { reactedUsers, nonReactedUsers } = usersList;
   return ContentService.createTextOutput(`【スタンプつけた人】\n${returnLogText(reactedUsers)}\n\n【スタンプつけてない人】\n${returnLogText(nonReactedUsers)}`);
