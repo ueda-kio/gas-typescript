@@ -1,0 +1,16 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+devDependencies:
+  '@types/google-apps-script':
+    specifier: ^1.0.77
+    version: 1.0.78
+
+packages:
+
+  /@types/google-apps-script@1.0.78:
+    resolution: {integrity: sha512-JOTy4vjBQ+HfdtJMkfcNF5WM8RC3R6SVp90bd8BCFvNWSaQ7zzP3abOLuJSCwQHjt0hWftofckvhwEcZjZ4hcQ==}
+    dev: true
