@@ -4,6 +4,12 @@ if (SLACK_API_TOKEN === null) {
 }
 
 function doPost(e: GoogleAppsScript.Events.DoPost) {
+  if (SLACK_API_TOKEN === null) {
+    return ContentService.createTextOutput(
+      'Error: SlackのAPIトークンが設定されていません。お手数ですが、実装者（<@U02GV6GB9DE>）へご連絡お願いします。::japanese_dogeza:'
+    );
+  }
+
   const paramText = e.parameter.text;
   if (!paramText) {
     return ContentService.createTextOutput('チェックしたいスレッドのURLを引数で渡してください！:open_hands:');
