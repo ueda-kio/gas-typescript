@@ -6,24 +6,20 @@ if (SLACK_API_TOKEN === null) {
 function doPost(e: GoogleAppsScript.Events.DoPost) {
   if (SLACK_API_TOKEN === null) {
     return ContentService.createTextOutput(
-      'Error: SlackのAPIトークンが設定されていません。お手数ですが、実装者（<@U02GV6GB9DE>）へご連絡お願いします。::japanese_dogeza:'
+      'Error: SlackのAPIトークンが設定されていません。お手数ですが、実装者（<@U02GV6GB9DE>）へご連絡お願いします。:japanese_dogeza:'
     );
   }
 
   const paramText = e.parameter.text;
-  if (!paramText) {
-    return ContentService.createTextOutput('チェックしたいスレッドのURLを引数で渡してください！:open_hands:');
-  }
+  if (!paramText) return ContentService.createTextOutput('チェックしたいスレッドのURLを引数で渡してください！:open_hands:');
 
-  const { threadUrl, argStamp } = extractUrlAndStampFromArgument(paramText);
+  const { threadUrl, argStamp } = extractUrlAndStampFromParameter(paramText);
   if (argStamp === false) {
     return ContentService.createTextOutput('第1引数にスレッドのurl、第2引数にスタンプを指定してください！スタンプは指定しなくても構いません！:open_hands:');
   }
 
   const threadData = getThreadData(threadUrl);
-  if (!threadData) {
-    return ContentService.createTextOutput('Error: スレッドデータの取得に失敗しました。:pien-2:');
-  }
+  if (!threadData) return ContentService.createTextOutput('Error: スレッドデータの取得に失敗しました。:pien-2:');
 
   const reactedUserIds = getReactedUserIds(threadData, argStamp);
   if (!reactedUserIds) return ContentService.createTextOutput('Error: スタンプを押したユーザー一覧の取得に失敗しました。:pien-2:');
@@ -37,25 +33,22 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
   );
 }
 
-function extractUrlAndStampFromArgument(parameter: string) {
+function extractUrlAndStampFromParameter(parameter: string) {
   const spaceRegExp = /\s+|　+/;
   if (!spaceRegExp.test(parameter)) return { threadUrl: parameter, argStamp: '' };
 
   const splitParameter = parameter.split(spaceRegExp);
   const threadUrl = splitParameter[0];
   const argStamp = splitParameter[1];
-  const stampRegExp = /^:(.+):$/;
-  if (!stampRegExp.test(argStamp)) return { threadUrl, argStamp: false as const };
-
-  return { threadUrl, argStamp };
+  return /^:(.+):$/.test(argStamp) ? { threadUrl, argStamp } : { threadUrl, argStamp: false as const };
 }
 
-function getThreadData(threadLink: string) {
+function getThreadData(threadUrl: string) {
   try {
     const messages = UrlFetchApp.fetch('https://slack.com/api/search.messages', {
       headers: { Authorization: `Bearer ${SLACK_API_TOKEN}` },
       payload: {
-        query: threadLink,
+        query: threadUrl,
       },
     });
 
@@ -65,7 +58,6 @@ function getThreadData(threadLink: string) {
 
     return typeof channelId === 'string' && typeof ts === 'string' ? { channelId, ts } : false;
   } catch (e) {
-    Logger.log(e);
     return false;
   }
 }
@@ -84,11 +76,10 @@ function getReactedUserIds({ channelId, ts }: { channelId: string; ts: string },
     const reactions: {
       name: string;
       users: string[];
-      count: string;
     }[] = repliesBody.messages[0].reactions;
-    if (typeof reactions === 'undefined') return []; // スタンプを押したユーザーがいない場合.
+    if (typeof reactions === 'undefined') return []; // スタンプを押したユーザーがいない場合
 
-    // 引数にスタンプを指定したかどうか.
+    // 引数にスタンプを指定したかどうか
     if (argStamp) {
       const reactionUserIds = reactions.find((reaction) => reaction.name === argStamp.replaceAll(':', ''))?.users ?? [];
       return reactionUserIds;
@@ -99,7 +90,6 @@ function getReactedUserIds({ channelId, ts }: { channelId: string; ts: string },
       return reactionUserIds;
     }
   } catch (e) {
-    Logger.log(e);
     return false;
   }
 }
@@ -126,7 +116,6 @@ function getUserListOfReactedOrNot(channelId: string, reactedUserIds: string[]) 
 
     return { reactedUsers, nonReactedUsers };
   } catch (e) {
-    Logger.log(e);
     return false;
   }
 }
