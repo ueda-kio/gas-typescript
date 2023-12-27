@@ -1,3 +1,5 @@
+import { Response } from 'types/slack';
+
 const SLACK_API_TOKEN = PropertiesService.getScriptProperties().getProperty('SLACK_API_TOKEN');
 if (SLACK_API_TOKEN === null) {
   Logger.log('SLACK_API_TOKEN is null.');
@@ -44,17 +46,30 @@ function extractUrlAndStampFromParameter(parameter: string) {
 }
 
 function getThreadData(threadUrl: string) {
+  const query = `${threadUrl} -${threadUrl}`;
   try {
     const messages = UrlFetchApp.fetch('https://slack.com/api/search.messages', {
       headers: { Authorization: `Bearer ${SLACK_API_TOKEN}` },
       payload: {
-        query: threadUrl,
+        query,
+        sort: 'asc',
       },
     });
 
-    const messagesBody = JSON.parse(messages.getContentText());
-    const channelId = messagesBody.messages.matches[0].channel.id;
-    const ts = messagesBody.messages.matches[0].ts;
+    const messagesBody: Response = JSON.parse(messages.getContentText());
+    const matches = messagesBody.messages.matches;
+    if (!matches.length) throw new Error('スレッドが見つかりませんでした。');
+
+    const match = (() => {
+      if (matches.length > 1) {
+        const target = matches.find((match) => match.permalink === threadUrl);
+        return target ? target : matches[0];
+      }
+      return matches[0];
+    })();
+
+    const channelId = match.channel.id;
+    const ts = match.ts;
 
     return typeof channelId === 'string' && typeof ts === 'string' ? { channelId, ts } : false;
   } catch (e) {
