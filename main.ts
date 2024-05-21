@@ -46,13 +46,12 @@ function extractUrlAndStampFromParameter(parameter: string) {
 }
 
 function getThreadData(threadUrl: string) {
-  const query = `${threadUrl} -${threadUrl}`;
   try {
     const messages = UrlFetchApp.fetch('https://slack.com/api/search.messages', {
       headers: { Authorization: `Bearer ${SLACK_API_TOKEN}` },
       payload: {
-        query,
-        sort: 'asc',
+        query: threadUrl,
+        sort: 'desc',
       },
     });
 
